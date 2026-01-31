@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Global - Plataforma de Proyectos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* Estilos generales */
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #chat-container {
+      background-color: #ffffff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 500px;
+    }
+
+    #chat-header {
+      background-color: #3b82f6;
+      color: white;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #chat-header h2 {
+      margin: 0;
+    }
+
+    #chat-header .user-count {
+      background-color: #ffffff;
+      color: #3b82f6;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+    }
+
+    #messages {
+      list-style-type: none;
+      padding: 16px;
+      margin: 0;
+      flex-grow: 1;
+      overflow-y: auto;
+      background-color: #f9fafb;
+    }
+
+    #messages li {
+      background-color: #f1f5f9;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      max-width: 80%;
+      margin-left: 0;
+      margin-right: auto;
+      word-wrap: break-word;
+    }
+
+    #messages .message-sent {
+      background-color: #3b82f6;
+      color: white;
+      align-self: flex-end;
+    }
+
+    #input-container {
+      display: flex;
+      padding: 10px 16px;
+      background-color: #ffffff;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    #inputMessage {
+      flex-grow: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+
+    #sendMessage {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    #sendMessage:hover {
+      background-color: #2563eb;
+    }
+
+    /* Responsividad */
+    @media (max-width: 600px) {
+      #chat-container {
+        width: 100%;
+        height: 100%;
+        margin: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="chat-container">
+    <!-- Cabecera del chat -->
+    <div id="chat-header">
+      <h2>Chat Global de Proyectos</h2>
+      <span class="user-count">Usuarios conectados: <span id="userCount">0</span></span>
+    </div>
+
+    <!-- Mensajes -->
+    <ul id="messages"></ul>
+
+    <!-- Campo de entrada y botón para enviar -->
+    <div id="input-container">
+      <input id="inputMessage" type="text" placeholder="Escribe un mensaje..." autofocus />
+      <button id="sendMessage">Enviar</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Conexión con el servidor
+    const socket = io('https://nombre-de-tu-aplicacion.herokuapp.com');
+    
+    // Mantener el conteo de usuarios conectados
+    let userCount = 0;
+
+    socket.on('nuevo-mensaje', (msg) => {
+      const messagesList = document.getElementById('messages');
+      const newMessage = document.createElement('li');
+      newMessage.textContent = msg;
+      newMessage.classList.add('message-sent');
+      messagesList.appendChild(newMessage);
+      messagesList.scrollTop = messagesList.scrollHeight; // Desplazar hacia abajo
+    });
+
+    // Emitir mensaje
+    document.getElementById('sendMessage').onclick = () => {
+      const messageInput = document.getElementById('inputMessage');
+      const message = messageInput.value;
+      if (message.trim()) {
+        socket.emit('enviar-mensaje', message);  // Enviar mensaje al servidor
+        messageInput.value = '';  // Limpiar campo de texto
+      }
+    };
+
+    // Actualizar el conteo de usuarios conectados
+    socket.on('actualizar-usuarios', (count) => {
+      document.getElementById('userCount').textContent = count;
+    });
+  </script>
+
+</body>
+</html>
